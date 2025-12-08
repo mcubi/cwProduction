@@ -14,7 +14,7 @@ def show_games(request):
     if request.method == "POST":
         room_name = request.POST.get("room_name")
         if not GameXO.objects.filter(room_name=room_name).exists():
-            GameXO.objects.create(owner=request.user, room_name=room_name)
+            GameXO.objects.create(player_x=request.user, room_name=room_name)
         return redirect("gamesX:allgames")
 
 
@@ -31,8 +31,10 @@ def show_active_game(request, pk):
     game = get_object_or_404(GameXO, pk=pk)
     board = list(game.board)
 
-    if request.method == "POST" and request.user == game.owner and game.state == "active":
+    if request.method == "POST" and game.state == "active":
         pos = int(request.POST.get("cell"))
+        board = list(game.board)
+
         if board[pos] == "_":
             board[pos] = game.active_player
             winner = check_winner(board)
@@ -44,16 +46,17 @@ def show_active_game(request, pk):
                 game.state = "won"
                 game.winner = winner
             else:
+                # Alternar turno aunque estés solo
                 game.active_player = "O" if game.active_player == "X" else "X"
 
             game.save()
+
             
 
     # DELETING THE ACTIVE GAME ::
+
     
-    # @WARN => ONLY THE OWNER CAN DELETE IT
-    
-    if request.GET.get("delete") == "1" and request.user == game.owner:
+    if request.GET.get("delete") == "1":
         game.delete()
         return redirect("gamesX:allgames")
 

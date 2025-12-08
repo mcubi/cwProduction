@@ -1,4 +1,4 @@
-{% extends "base.html" %}{% block title %}Code Walkers{% endblock %}
+{% extends "base.html" %} {% block title %}Code Walkers{% endblock %}
 <!--content-->
 {% block content %}
 <h2>Room: {{ game.room_name }}</h2>
@@ -20,26 +20,17 @@
       name="cell"
       value="{{ forloop.counter0 }}"
       style="height: 80px; font-size: 2em"
-      {%
-      if
-      request.user
-      !="game.owner"
-      or
-      cell
-      !="_"
-      or
-      game.state
-      !="active"
-      %}disabled{%
-      endif
-      %}
     >
-      {% if cell == "_" %}⬜{% elif cell == "X" %}❌{% else %}⭕{% endif %}
+      {% if cell == "_" %} ⬜ {% elif cell == "X" %} ❌ {% else %} ⭕
+      <!-- separator -->
+      {% endif %}
     </button>
     {% endfor %}
   </div>
 </form>
 
-{% if request.user == game.owner %}
+<!-- kill room -->
+
+{% if request.user == game.player_x %}
 <a href="?delete=1">🗑️ Close Room</a>
 {% endif %} {% endblock %}
