@@ -12,27 +12,26 @@ from .utils import check_winner
 
 class GameConsumer(AsyncWebsocketConsumer):
 
-    # ---------------------------------------------------------
-    # 1) CONNECT: el usuario entra al WebSocket
-    # ---------------------------------------------------------
+    # CONNECTION FUNCTION ::
+   
     async def connect(self):
-        self.room_id = self.scope["url_route"]["kwargs"]["room_name"]
-        self.room_group_id = f"game_{self.room_id}"
+        self.room_id = self.scope["url_route"]["kwargs"]["room_name"] # Get room name from URL
+        self.room_group_id = f"game_{self.room_id}" # Define group name based on room name
 
-        # Unirse al grupo
+        # Group adding
         await self.channel_layer.group_add(
             self.room_group_id, self.channel_name
         )
 
-        # Aceptar conexión WebSocket
+        # WS acceptance
         await self.accept()
 
-        # Obtener el juego
+        # Getter for game
         game = await self.get_game()
         if not game:
             return
 
-        # Asignar X y O automáticamente
+        # Player assignment
         player_x, player_o = await self.get_players(game)
         user = self.scope["user"]
 
@@ -43,20 +42,18 @@ class GameConsumer(AsyncWebsocketConsumer):
 
         await self.save_game(game)
 
-        # Enviar estado inicial
+        # Initial state sending
         await self.send_game_state(game)
 
-    # ---------------------------------------------------------
-    # 2) DISCONNECT
-    # ---------------------------------------------------------
+    # DISCONNECTION FUNCTION ::
+    
     async def disconnect(self, close_code):
         await self.channel_layer.group_discard(
             self.room_group_id, self.channel_name
         )
 
-    # ---------------------------------------------------------
-    # 3) RECEIVE
-    # ---------------------------------------------------------
+    # RECEIVE MESSAGE FUNCTION ::
+    
     async def receive(self, text_data):
         data = json.loads(text_data)
 
@@ -72,9 +69,8 @@ class GameConsumer(AsyncWebsocketConsumer):
                 }
             )
 
-    # ---------------------------------------------------------
-    # HANDLER DEL CHAT
-    # ---------------------------------------------------------
+    # CHAT HANDLER ::
+    
     async def chat_message(self, event):
         await self.send(text_data=json.dumps({
             "type": "chat",
@@ -82,33 +78,32 @@ class GameConsumer(AsyncWebsocketConsumer):
             "message": event["message"],
         }))
 
-    # ---------------------------------------------------------
-    # 4) LÓGICA DEL MOVIMIENTO DEL TRES EN RAYA
-    # ---------------------------------------------------------
+
+    # MOVEMENT HANDLER ::
+    
     async def handle_move(self, pos):
         game = await self.get_game()
         if not game:
             return
 
-        # Solo si el juego está activo
+    
         if game.state != "active":
             return
 
         board = list(game.board)
         pos = int(pos)
 
-        # Solo si la celda está libre
+        # case cell open
         if board[pos] == "_":
-            # Verificar turno del jugador
+            
             current_user = self.scope["user"]
             player_symbol = "X" if game.player_x_id == current_user.id else "O"
             if player_symbol != game.active_player:
-                return  # no es su turno
+                return  
 
             board[pos] = game.active_player
             winner = check_winner(board)
 
-            # Actualizar estado
             game.board = "".join(board)
             if winner == "tie":
                 game.state = "tie"
@@ -116,12 +111,12 @@ class GameConsumer(AsyncWebsocketConsumer):
                 game.state = "won"
                 game.winner = winner
             else:
-                # Alternar turno
+                
                 game.active_player = "O" if game.active_player == "X" else "X"
 
             await self.save_game(game)
 
-        # Broadcast
+        # Channel layer group broadcast
         await self.channel_layer.group_send(
             self.room_group_id,
             {
@@ -130,18 +125,17 @@ class GameConsumer(AsyncWebsocketConsumer):
             }
         )
 
-    # ---------------------------------------------------------
-    # 5) BROADCAST
-    # ---------------------------------------------------------
+
+    # UPDATE HANDLER FOR BRWSR ::
+    
     async def game_update(self, event):
         await self.send(text_data=json.dumps({
             "type": "game_state",
             "game": event["game"]
         }))
 
-    # ---------------------------------------------------------
-    # 6) HELPERS BD
-    # ---------------------------------------------------------
+    # DB SYNC HELPERS ::
+    
     @database_sync_to_async
     def get_game(self):
         try:
@@ -170,7 +164,7 @@ class GameConsumer(AsyncWebsocketConsumer):
     def get_players(self, game):
         return game.player_x, game.player_o
 
-    # Enviar estado inicial
+    # Function to send the state
     async def send_game_state(self, game):
         await self.send(text_data=json.dumps({
             "type": "game_state",

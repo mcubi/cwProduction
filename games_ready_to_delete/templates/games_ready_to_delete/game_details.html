@@ -32,6 +32,35 @@
 <a href="?delete=1">🗑️ Close Room</a>
 {% endif %}
 
+<div
+  id="chat-container"
+  class="mt-8 w-full max-w-md bg-gray-900 border border-gray-700 rounded-xl shadow-xl"
+>
+  <!-- Chat Messages -->
+  <div
+    id="chat-messages"
+    class="h-64 overflow-y-auto p-4 flex flex-col gap-3"
+  ></div>
+
+  <!-- Input -->
+  <div class="flex border-t border-gray-700">
+    <input
+      id="chat-input"
+      type="text"
+      maxlength="300"
+      placeholder="Escribe un mensaje..."
+      class="flex-1 px-3 py-2 bg-gray-800 text-gray-200 placeholder-gray-500 focus:outline-none rounded-bl-xl"
+    />
+
+    <button
+      id="send-btn"
+      class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-br-xl"
+    >
+      Enviar
+    </button>
+  </div>
+</div>
+
 <script>
   const roomName = "{{ game.room_name }}";
   const userName = "{{ request.user.username }}";
@@ -40,20 +69,22 @@
     "ws://" + window.location.host + "/ws/game/" + roomName + "/"
   );
 
-  // Actualizar tablero y turno/ganador al recibir mensaje
+  // RECEIVE FROM SV ::
   gameSocket.onmessage = function (e) {
     const data = JSON.parse(e.data);
     if (data.type === "game_state") {
       const game = data.game;
 
-      // Actualizar tablero sin recargar
+      // Update bard {not recharge}
+
       game.board.split("").forEach((cell, index) => {
         const btn = document.querySelector(`button[value='${index}']`);
         if (!btn) return;
         btn.textContent = cell === "_" ? "⬜" : cell === "X" ? "❌" : "⭕";
       });
 
-      // Actualizar turno o ganador
+      // Update turn and winner
+
       const turnEl = document.querySelector("#turn");
       if (turnEl) turnEl.textContent = `Turn: ${game.active_player}`;
       const winnerEl = document.querySelector("#winner");
@@ -63,17 +94,71 @@
     }
   };
 
+  // Handle socket closure
+
   gameSocket.onclose = function (e) {
     console.error("Chat socket closed unexpectedly");
   };
 
-  // ---- Enviar movimientos al servidor ----
+  // Send moves to the server
+
   document.querySelectorAll("button[name='cell']").forEach((btn) => {
     btn.addEventListener("click", (event) => {
       event.preventDefault(); // evita recargar la página
       const cell = btn.value;
       gameSocket.send(JSON.stringify({ type: "move", cell }));
     });
+  });
+
+  // CHAT UI LOGIC ::
+  const chatMessages = document.getElementById("chat-messages");
+  const chatInput = document.getElementById("chat-input");
+  const sendBtn = document.getElementById("send-btn");
+
+  // Send
+  function sendMessage() {
+    const msg = chatInput.value.trim();
+    if (!msg) return;
+
+    gameSocket.send(
+      JSON.stringify({
+        type: "chat",
+        message: msg,
+      })
+    );
+    chatInput.value = "";
+  }
+
+  // 'Enter' event
+  chatInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") sendMessage();
+  });
+
+  // 'Click' event
+  sendBtn.addEventListener("click", sendMessage);
+
+  // Receive
+  gameSocket.addEventListener("message", (e) => {
+    const data = JSON.parse(e.data);
+
+    if (data.type === "chat") {
+      const div = document.createElement("div");
+
+      if (data.username === userName) {
+        div.classList =
+          "self-end max-w-xs bg-blue-600 text-white px-3 py-2 rounded-lg";
+      } else {
+        div.classList =
+          "self-start max-w-xs bg-gray-700 text-gray-200 px-3 py-2 rounded-lg";
+      }
+
+      // Display
+
+      div.innerHTML = `<strong>${data.username}</strong><br>${data.message}`;
+      chatMessages.appendChild(div);
+
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
   });
 </script>
 
