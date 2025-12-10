@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-))=0)4_)i@o1omz^r60cxjwzj*6b*&-so6#i@)c5q+#7)i3w4e
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -36,13 +36,16 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'projecthub',
-    'tailwind',
-    'django_browser_reload',
-    'theme',
-    'users',
-    'games_ready_to_delete'
+    'tailwind',  # CSS framework
+    'channels',
+    'daphne', # ASGI server for channels
+    'django.contrib.staticfiles', # files with no change (static server ej: page's background-image)
+    'projecthub', # app for projects 
+    'django_browser_reload', # app used to auto - reload browser on CTRL + S
+    'theme', # app used to load tailwind styles
+    'users', # users app
+    'games_ready_to_delete', # games app
+    
 ]
 
 MIDDLEWARE = [
@@ -53,7 +56,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'django_browser_reload.middleware.BrowserReloadMiddleware',
+    'django_browser_reload.middleware.BrowserReloadMiddleware', # middleware for auto relad browser on CTRL + S
 ]
 
 ROOT_URLCONF = 'cw_together.urls'
@@ -141,3 +144,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 TAILWIND_APP_NAME = 'theme'
 
 NPM_BIN_PATH = "C:/Program Files/nodejs/npm.cmd"
+
+ASGI_APPLICATION = 'cw_together.asgi.application' # Declaring asgi app location
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer"
+    }
+}

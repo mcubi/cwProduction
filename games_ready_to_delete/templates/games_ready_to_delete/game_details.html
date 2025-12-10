@@ -12,25 +12,69 @@
 <h3>Turn: {{ game.active_player }}</h3>
 {% endif %}
 
-<form method="post">
-  {% csrf_token %}
-  <div style="display: grid; grid-template-columns: repeat(3, 80px); gap: 5px">
-    {% for cell in board_cells %}
-    <button
-      name="cell"
-      value="{{ forloop.counter0 }}"
-      style="height: 80px; font-size: 2em"
-    >
-      {% if cell == "_" %} ⬜ {% elif cell == "X" %} ❌ {% else %} ⭕
-      <!-- separator -->
-      {% endif %}
-    </button>
-    {% endfor %}
-  </div>
-</form>
+<div style="display: grid; grid-template-columns: repeat(3, 80px); gap: 5px">
+  {% for cell in board_cells %}
+  <button
+    name="cell"
+    value="{{ forloop.counter0 }}"
+    style="height: 80px; font-size: 2em"
+  >
+    {% if cell == "_" %} ⬜ {% elif cell == "X" %} ❌ {% else %} ⭕
+    <!-- separator -->
+    {% endif %}
+  </button>
+  {% endfor %}
+</div>
 
 <!-- kill room -->
 
 {% if request.user == game.player_x %}
 <a href="?delete=1">🗑️ Close Room</a>
-{% endif %} {% endblock %}
+{% endif %}
+
+<script>
+  const roomName = "{{ game.room_name }}";
+  const userName = "{{ request.user.username }}";
+
+  const gameSocket = new WebSocket(
+    "ws://" + window.location.host + "/ws/game/" + roomName + "/"
+  );
+
+  // Actualizar tablero y turno/ganador al recibir mensaje
+  gameSocket.onmessage = function (e) {
+    const data = JSON.parse(e.data);
+    if (data.type === "game_state") {
+      const game = data.game;
+
+      // Actualizar tablero sin recargar
+      game.board.split("").forEach((cell, index) => {
+        const btn = document.querySelector(`button[value='${index}']`);
+        if (!btn) return;
+        btn.textContent = cell === "_" ? "⬜" : cell === "X" ? "❌" : "⭕";
+      });
+
+      // Actualizar turno o ganador
+      const turnEl = document.querySelector("#turn");
+      if (turnEl) turnEl.textContent = `Turn: ${game.active_player}`;
+      const winnerEl = document.querySelector("#winner");
+      if (winnerEl)
+        winnerEl.textContent =
+          game.state === "won" ? `Winner: ${game.winner}` : "";
+    }
+  };
+
+  gameSocket.onclose = function (e) {
+    console.error("Chat socket closed unexpectedly");
+  };
+
+  // ---- Enviar movimientos al servidor ----
+  document.querySelectorAll("button[name='cell']").forEach((btn) => {
+    btn.addEventListener("click", (event) => {
+      event.preventDefault(); // evita recargar la página
+      const cell = btn.value;
+      gameSocket.send(JSON.stringify({ type: "move", cell }));
+    });
+  });
+</script>
+
+{% endblock %}
