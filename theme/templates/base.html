@@ -1,5 +1,5 @@
 {% load static tailwind_tags %}
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <title>{% block title %}Django Tailwind{% endblock %}</title>
@@ -24,7 +24,6 @@
       <a href="{% url 'users:personal_page' %}">My Projects</a>
       <a href="{% url 'users:login' %}">Change user?</a>
       <!-- # D E L E T E :: A F T E R -->
-      <a href="{% url 'gamesX:allgames' %}">Games</a>
       <form action="{% url 'users:logout' %}" method="post">
         {% csrf_token %}
         <button>Logout</button>

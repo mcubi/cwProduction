@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -37,14 +38,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'tailwind',  # CSS framework
-    'channels',
-    'daphne', # ASGI server for channels
     'django.contrib.staticfiles', # files with no change (static server ej: page's background-image)
     'projecthub', # app for projects 
-    'django_browser_reload', # app used to auto - reload browser on CTRL + S
     'theme', # app used to load tailwind styles
     'users', # users app
-    'games_ready_to_delete', # games app
+    
     
 ]
 
@@ -56,7 +54,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'django_browser_reload.middleware.BrowserReloadMiddleware', # middleware for auto relad browser on CTRL + S
+    
 ]
 
 ROOT_URLCONF = 'cw_together.urls'
@@ -145,10 +143,6 @@ TAILWIND_APP_NAME = 'theme'
 
 NPM_BIN_PATH = "C:/Program Files/nodejs/npm.cmd"
 
-ASGI_APPLICATION = 'cw_together.asgi.application' # Declaring asgi app location
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer"
-    }
-}
+STATIC_ROOT = BASE_DIR / 'staticfiles'

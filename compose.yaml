@@ -1,0 +1,26 @@
+version: "3.8"
+
+services:
+  web:
+    build: .
+    volumes:
+      - staticfiles:/app/staticfiles
+    expose:
+      - "8000"
+    command: >
+      sh -c "python manage.py collectstatic --noinput &&
+             gunicorn cw_together.wsgi:application --bind 0.0.0.0:8000"
+
+  nginx:
+    image: nginx:alpine
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - staticfiles:/usr/src/app/staticfiles
+      - ./media:/usr/src/app/media
+    ports:
+      - "80:80"
+    depends_on:
+      - web
+
+volumes:
+  staticfiles:
