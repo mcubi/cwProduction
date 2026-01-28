@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
-import os
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -128,6 +128,7 @@ STATICFILES_DIRS = [
     BASE_DIR / "static",   
 ]
 
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # Media files (Uploaded by users)
 MEDIA_URL = '/media/'
@@ -143,6 +144,3 @@ TAILWIND_APP_NAME = 'theme'
 
 NPM_BIN_PATH = "C:/Program Files/nodejs/npm.cmd"
 
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
-STATIC_ROOT = BASE_DIR / 'staticfiles'
