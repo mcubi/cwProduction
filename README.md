@@ -1,4 +1,4 @@
-q# PRODUCTION DEPLOYMENT PRACTISE: 
+# PRODUCTION DEPLOYMENT PRACTISE: 
 
 ## PART 1: DEV STAGE
 For this stage w'll be adding a dockerfile and a YAML compose file to declare to docker what to build. Furthermore, we will need a requirements file to make sure the project has installed all necessary dependencies:
