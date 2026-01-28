@@ -10,9 +10,9 @@ For this stage w'll be adding a dockerfile and a YAML compose file to declare to
 <img width="1132" height="729" alt="cpose 1" src="https://github.com/user-attachments/assets/10a6e9ae-e222-4e60-ae4b-5d878a63a7a2" />
 
 ## PART 2: FIRST PRODUCTION STAGE
-Now, we'll add Gunicorn as intermediate between our application and the world of internet as WSGI. Why do we need to do this? First, exposing the app to internet by default is insecure and it's not scalable. So
-we need a web server, like nginx in this practise. Secondly, a web server like nginx cannot execute directly python or other codes. We need an app that can intermediate between theese two. Then, we need to make
-a scalable and secured project , so we need a server, but servers do not execute code easily so we need something to intermediate.
+Now, we'll add Gunicorn as intermediate WSGI server between our application and the rest. Why do we need to do this? First, exposing the app to internet by default is insecure and it's not scalable. So
+we need a web server, like nginx in this practise. Secondly, a web server like nginx cannot execute directly python or other codes. We need a server that can intermediate between theese two. Then, we need to make
+a scalable and secured project , so we need a server, but servers do not execute code easily so we need a server able to intermediate.
 
 To get Gunicorn we define it in the requirements and we modify the command of the compose and the dockerfile (only showing dockerfile)
 Later we must make a little fix. In the project there's installed the reload middleware, and it's a bad ppractise to use it in a production deployment because of the frequent petitions to reload.
@@ -23,7 +23,8 @@ So, we must eliminate the app, the middleware and the specification in the requi
 <img width="1131" height="395" alt="dfile 2" src="https://github.com/user-attachments/assets/d4137769-ee4f-49d8-9eb4-6a678bc25be9" />
 
 ## PART 3: FINAL PRODUCTION STAGE
-Now we will be adding the web server nginx, by adding a folder 'nginx' with another folder, 'conf.d' and inside it a file called 'default.conf'. This file will have de basic configuration for the server
+Now we will be adding the web server nginx, by adding a folder 'nginx' with another folder, 'conf.d' and inside it a file called 'default.conf'. This file will have de basic configuration for the server.
+We're using this nginx server as a reverse proxy.
 
 <img width="1157" height="676" alt="default" src="https://github.com/user-attachments/assets/b8e7ee9a-e1c0-4dd1-b667-7f2717df77ee" />
 
